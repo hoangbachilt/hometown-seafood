@@ -2,6 +2,7 @@
 
 import { useCart } from "@/lib/cart-context";
 import Image from "next/image";
+import { getProductUnit } from "@/lib/data";
 
 export default function CartItemRow({
   item,
@@ -16,6 +17,7 @@ export default function CartItemRow({
   };
 }) {
   const { updateQuantity } = useCart();
+  const unit = getProductUnit(item.productId);
 
   // Recreate partial Product object for the update context
   const dummyProduct = {
@@ -93,8 +95,8 @@ export default function CartItemRow({
         >
           {item.name}
         </h3>
-        <p style={{ fontSize: "0.85rem", color: "var(--color-text-muted)" }}>
-          {new Intl.NumberFormat("vi-VN").format(item.pricePerKg)}đ/kg
+        <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--color-terracotta)", fontWeight: 700 }}>
+          {new Intl.NumberFormat("vi-VN").format(item.pricePerKg)}đ/{unit}
         </p>
         <div
           style={{
@@ -160,8 +162,8 @@ export default function CartItemRow({
               -
             </div>
           </button>
-          <span style={{ margin: "0", fontSize: "0.8rem", fontWeight: 800, width: "32px", textAlign: "center" }}>
-            {item.quantity} kg
+          <span style={{ margin: "0 0.25rem", fontSize: "0.85rem", fontWeight: 800, width: "32px", textAlign: "center", whiteSpace: "nowrap" }}>
+            {item.quantity} {unit === "kg" ? "kg" : "x"}
           </span>
           <button
             onClick={handleIncrease}

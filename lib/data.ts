@@ -12,12 +12,21 @@ export const CATEGORIES = [
 // Hàm phụ trợ để tự động map sản phẩm vào category dựa trên tên (hoặc bạn có thể dùng mapping thủ công bên dưới)
 export function getCategoryByProductName(name: string): string {
   const lowerName = name.toLowerCase();
+  if (lowerName.includes("nước mắm")) return "nuoc_mam";
+  if (lowerName.includes("nem")) return "nem_chua";
   if (lowerName.includes("mực")) return "muc";
   if (lowerName.includes("cá")) return "ca";
   if (lowerName.includes("tôm")) return "tom";
-  if (lowerName.includes("nước mắm")) return "nuoc_mam";
-  if (lowerName.includes("nem")) return "nem_chua";
   return "khac";
+}
+
+export const PRODUCT_UNITS: Record<string, string> = {
+  // Nem chua
+  "9d1a9a2e-dcfe-42fa-8ad5-ed91899fba41": "10 cái",
+};
+
+export function getProductUnit(productId: string): string {
+  return PRODUCT_UNITS[productId] || "kg";
 }
 
 // Map chứa danh sách các ảnh phụ (hoặc video mp4/webm) cho mỗi sản phẩm (dựa trên ID của sản phẩm trong Supabase)
@@ -85,5 +94,23 @@ export const PRODUCT_IMAGES_MAP: Record<string, string[]> = {
   "e18fb2a0-1f46-440b-859f-2e61d21a54dc": [
     "/images/tom_non_sat_1.jpg",
     "/images/tom_non_sat_2.jpg",
+  ],
+
+  // Nước mắm cá thu
+  "309b691d-bc84-439b-97dc-d01750fda8a1": [
+    "/images/nuoc_mam.jpg",
+    "/videos/nuoc_mam.mp4",
+  ],
+
+  // Nước mắm cá cơm
+  "139813cc-5819-4900-ad81-77e00dda081c": [
+    "/images/nuoc_mam.jpg",
+    "/videos/nuoc_mam.mp4",
+  ],
+
+  // Nem chua
+  "9d1a9a2e-dcfe-42fa-8ad5-ed91899fba41": [
+    "/images/nem_chua_1.jpg",
+    "/images/nem_chua_2.jpg",
   ],
 };

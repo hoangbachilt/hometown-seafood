@@ -5,7 +5,7 @@ import { useCart } from "@/lib/cart-context";
 import Image from "next/image";
 import { useState } from "react";
 import ProductDetailSheet from "./product-detail-sheet";
-import { PRODUCT_IMAGES_MAP } from "@/lib/data";
+import { PRODUCT_IMAGES_MAP, getProductUnit } from "@/lib/data";
 
 export default function ProductCard({
   product,
@@ -21,6 +21,8 @@ export default function ProductCard({
   const extraImages = PRODUCT_IMAGES_MAP[product.id] || [];
   const displayImage = product.image_url || extraImages[0];
   const isVideo = displayImage?.toLowerCase().endsWith(".mp4") || displayImage?.toLowerCase().endsWith(".webm");
+  
+  const unit = getProductUnit(product.id);
 
   const handleAdd = () => {
     addItem(product, 1);
@@ -50,16 +52,15 @@ export default function ProductCard({
     >
       {/* Organic Image or Placeholder */}
       <div
-        className={`${shapeClass} shadow-card`}
         style={{
           width: "100%",
-          aspectRatio: "1 / 1",
-          backgroundColor: "var(--color-seafoam)",
-          overflow: "hidden",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          aspectRatio: "1/1",
           position: "relative",
+          overflow: "hidden",
+          borderRadius: "50%",
+          backgroundColor: "var(--color-seafoam)",
+          boxShadow: "inset 0 0 20px rgba(56, 41, 35, 0.05)",
+          cursor: "pointer",
           transition: "transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)",
         }}
         onMouseEnter={(e) => {
@@ -118,7 +119,7 @@ export default function ProductCard({
             color: "var(--color-text-muted)",
           }}
         >
-          {new Intl.NumberFormat("vi-VN").format(product.price_per_kg)}đ/kg
+          {new Intl.NumberFormat("vi-VN").format(product.price_per_kg)}đ/{unit}
         </p>
       </div>
 
@@ -211,8 +212,8 @@ export default function ProductCard({
                 -
               </div>
             </button>
-            <span style={{ margin: "0 0.25rem", fontSize: "0.85rem", fontWeight: 800, width: "32px", textAlign: "center" }}>
-              {initialQuantity} kg
+            <span style={{ margin: "0 0.25rem", fontSize: "0.85rem", fontWeight: 800, width: "32px", textAlign: "center", whiteSpace: "nowrap" }}>
+              {initialQuantity} {unit === "kg" ? "kg" : "x"}
             </span>
             <button
               onClick={handleIncrease}

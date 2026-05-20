@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { Product } from "@/lib/supabase";
 import { useCart } from "@/lib/cart-context";
-import { PRODUCT_IMAGES_MAP } from "@/lib/data";
+import { PRODUCT_IMAGES_MAP, getProductUnit } from "@/lib/data";
 
 export default function ProductDetailSheet({
   isOpen,
@@ -19,6 +20,7 @@ export default function ProductDetailSheet({
 }) {
   const { addItem, updateQuantity } = useCart();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [mounted, setMounted] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Get additional images from hardcoded map, fallback to main image
@@ -26,8 +28,11 @@ export default function ProductDetailSheet({
   const images = product.image_url 
     ? [product.image_url, ...extraImages] 
     : extraImages;
+    
+  const unit = getProductUnit(product.id);
 
   useEffect(() => {
+    setMounted(true);
     if (isOpen) {
       document.body.style.overflow = "hidden";
       setActiveImageIndex(0);
@@ -64,7 +69,9 @@ export default function ProductDetailSheet({
     setActiveImageIndex(newIndex);
   };
 
-  return (
+  if (!mounted) return null;
+
+  const content = (
     <div
       style={{
         position: "fixed",
@@ -72,7 +79,7 @@ export default function ProductDetailSheet({
         backgroundColor: "rgba(56, 41, 35, 0.6)", // Abyssal backdrop
         backdropFilter: "blur(4px)",
         WebkitBackdropFilter: "blur(4px)",
-        zIndex: 100,
+        zIndex: 9999, // Đảm bảo luôn nằm trên cùng (trên cả BottomNav)
         display: "flex",
         flexDirection: "column",
         justifyContent: "flex-end",
@@ -147,7 +154,7 @@ export default function ProductDetailSheet({
                           aspectRatio: "1/1", // VUÔNG CHUẨN THEO BÊN NGOÀI
                           scrollSnapAlign: "center",
                           position: "relative",
-                          borderRadius: "var(--radius-blob-1)", // BO GÓC HỮU CƠ THEO BÊN NGOÀI
+                          borderRadius: "50%", // HÌNH TRÒN 
                           overflow: "hidden",
                           marginRight: "1rem",
                           boxShadow: "inset 0 0 20px rgba(56, 41, 35, 0.05)",
@@ -233,7 +240,7 @@ export default function ProductDetailSheet({
                 marginBottom: "1.5rem",
               }}
             >
-              {new Intl.NumberFormat("vi-VN").format(product.price_per_kg)}đ/kg
+              {new Intl.NumberFormat("vi-VN").format(product.price_per_kg)}đ/{unit}
             </div>
 
             <p style={{ color: "var(--color-text-muted)", lineHeight: 1.6, fontSize: "0.95rem" }}>
@@ -298,7 +305,7 @@ export default function ProductDetailSheet({
                 -
               </button>
               <span style={{ fontSize: "1.2rem", fontWeight: 800 }}>
-                {initialQuantity} kg
+                {initialQuantity} {unit === "kg" ? "kg" : "x"}
               </span>
               <button
                 onClick={handleIncrease}
@@ -326,4 +333,6 @@ export default function ProductDetailSheet({
       </div>
     </div>
   );
+
+  return createPortal(content, document.body);
 }

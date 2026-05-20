@@ -4,12 +4,14 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/lib/cart-context";
 import { getCustomerInfo, saveCustomerInfo } from "@/lib/cart-context";
+import { getProductUnit } from "@/lib/data";
 import BottomNav from "@/components/bottom-nav";
 
 type FormData = {
   name: string;
   phone: string;
   address: string;
+  note: string;
 };
 
 type FieldError = Partial<Record<keyof FormData, string>>;
@@ -22,7 +24,7 @@ export default function CheckoutPage() {
   const { items, totalAmount, clearCart } = useCart();
   const router = useRouter();
 
-  const [form, setForm] = useState<FormData>({ name: "", phone: "", address: "" });
+  const [form, setForm] = useState<FormData>({ name: "", phone: "", address: "", note: "" });
   const [errors, setErrors] = useState<FieldError>({});
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -34,6 +36,7 @@ export default function CheckoutPage() {
         name: saved.name || "",
         phone: saved.phone || "",
         address: saved.address || "",
+        note: "",
       });
     }
   }, []);
@@ -69,11 +72,13 @@ export default function CheckoutPage() {
         customerName: form.name.trim(),
         customerPhone: form.phone.trim(),
         customerAddress: form.address.trim(),
+        customerNote: form.note.trim(),
         items: items.map((i) => ({
           name: i.name,
           quantity: i.quantity,
           price_per_kg: i.pricePerKg,
           subtotal: i.subtotal,
+          unit: getProductUnit(i.productId),
         })),
         totalAmount,
       };
@@ -157,7 +162,7 @@ export default function CheckoutPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: "2rem", marginTop: "1rem" }}>
           <div style={{ position: "relative" }}>
             <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--color-terracotta)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-              Tên người nhận
+              Tên người nhận <span style={{ color: "var(--color-error)" }}>*</span>
             </label>
             <input
               type="text"
@@ -175,7 +180,7 @@ export default function CheckoutPage() {
 
           <div style={{ position: "relative" }}>
             <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--color-terracotta)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-              Số điện thoại
+              Số điện thoại <span style={{ color: "var(--color-error)" }}>*</span>
             </label>
             <input
               type="tel"
@@ -193,7 +198,7 @@ export default function CheckoutPage() {
 
           <div style={{ position: "relative" }}>
             <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--color-terracotta)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-              Địa chỉ chi tiết
+              Địa chỉ chi tiết <span style={{ color: "var(--color-error)" }}>*</span>
             </label>
             <textarea
               placeholder="Số nhà, tên đường..."
@@ -207,6 +212,20 @@ export default function CheckoutPage() {
               className="earthen-input"
             />
             {errors.address && <span style={{ position: "absolute", right: 0, top: 0, fontSize: "0.75rem", color: "var(--color-error)" }}>{errors.address}</span>}
+          </div>
+
+          <div style={{ position: "relative" }}>
+            <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--color-terracotta)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              Ghi chú thêm
+            </label>
+            <textarea
+              placeholder="Thông tin đặc biệt cần lưu ý. Ví dụ: Cần nhận hàng trước ngày..."
+              value={form.note}
+              onChange={(e) => setForm({ ...form, note: e.target.value })}
+              rows={2}
+              style={{ ...inputStyle(false), resize: "none" }}
+              className="earthen-input"
+            />
           </div>
         </div>
 

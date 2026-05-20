@@ -10,12 +10,14 @@ type OrderItem = {
   quantity: number;
   price_per_kg: number;
   subtotal: number;
+  unit?: string;
 };
 
 type CheckoutPayload = {
   customerName: string;
   customerPhone: string;
   customerAddress: string;
+  customerNote?: string;
   items: OrderItem[];
   totalAmount: number;
 };
@@ -38,7 +40,7 @@ function formatTelegramMessage(payload: CheckoutPayload, orderId: string): strin
   const itemLines = payload.items
     .map(
       (item) =>
-        `  • ${item.name} — ${item.quantity}kg — ${new Intl.NumberFormat("vi-VN").format(item.subtotal)}đ`
+        `  • ${item.name} — ${item.quantity} ${item.unit || "kg"} — ${new Intl.NumberFormat("vi-VN").format(item.subtotal)}đ`
     )
     .join("\n");
 
@@ -51,6 +53,7 @@ function formatTelegramMessage(payload: CheckoutPayload, orderId: string): strin
     `👤 ${payload.customerName}`,
     `📞 ${payload.customerPhone}`,
     `📍 ${payload.customerAddress}`,
+    payload.customerNote ? `📝 *Ghi chú:* ${payload.customerNote}` : ``,
     ``,
     `🛒 *Đơn hàng:*`,
     itemLines,
@@ -156,7 +159,9 @@ export async function POST(request: NextRequest) {
     .insert({
       customer_name: typedPayload.customerName.trim(),
       customer_phone: typedPayload.customerPhone.trim(),
-      customer_address: typedPayload.customerAddress.trim(),
+      customer_address: typedPayload.customerNote 
+        ? `${typedPayload.customerAddress.trim()} (Ghi chú: ${typedPayload.customerNote.trim()})`
+        : typedPayload.customerAddress.trim(),
       items: typedPayload.items,
       total_amount: typedPayload.totalAmount,
       status: "pending",
