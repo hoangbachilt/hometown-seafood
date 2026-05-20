@@ -1,0 +1,193 @@
+@import "tailwindcss";
+
+@theme {
+  /* ===== Bảng màu mộc mạc - Đặc sản quê ===== */
+  --color-primary: #7c4f2a;
+  --color-primary-light: #a0673a;
+  --color-primary-dark: #5c3618;
+
+  --color-accent: #c9620a;
+  --color-accent-light: #e07920;
+  --color-accent-dark: #a84e06;
+
+  --color-bg: #fdf6ec;
+  --color-bg-alt: #f8eddc;
+  --color-card: #fffaf4;
+  --color-border: #e3cdb4;
+  --color-border-light: #f0e0cc;
+
+  --color-text: #3d2310;
+  --color-text-muted: #8b6b4e;
+  --color-text-light: #b8956e;
+
+  --color-success: #4caf72;
+  --color-error: #e05252;
+
+  /* ===== Typography ===== */
+  --font-sans: "Nunito", system-ui, sans-serif;
+
+  /* ===== Border radius ===== */
+  --radius-card: 1rem;
+  --radius-btn: 0.75rem;
+  --radius-pill: 9999px;
+}
+
+/* ===== Base Styles ===== */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  height: 100%;
+  font-size: 16px;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  min-height: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Safe area for notched phones */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 2px;
+}
+
+/* ===== Custom Utilities ===== */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Bottom nav safe spacing */
+  .pb-nav {
+    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+  }
+
+  /* Card shadow */
+  .shadow-card {
+    box-shadow: 0 2px 12px rgba(124, 79, 42, 0.08),
+                0 1px 3px rgba(124, 79, 42, 0.06);
+  }
+
+  .shadow-card-hover {
+    box-shadow: 0 4px 20px rgba(124, 79, 42, 0.14),
+                0 2px 6px rgba(124, 79, 42, 0.08);
+  }
+
+  /* Gradient backgrounds */
+  .bg-header-gradient {
+    background: linear-gradient(135deg, #5c3618 0%, #7c4f2a 50%, #a0673a 100%);
+  }
+
+  .bg-accent-gradient {
+    background: linear-gradient(135deg, #a84e06 0%, #c9620a 100%);
+  }
+}
+
+/* ===== Animations ===== */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes badgePop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+@keyframes checkBounce {
+  0%   { transform: scale(0) rotate(-10deg); opacity: 0; }
+  60%  { transform: scale(1.2) rotate(5deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out;
+}
+
+.animate-badge-pop {
+  animation: badgePop 0.3s ease-out;
+}
+
+.animate-check-bounce {
+  animation: checkBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, #f0e0cc 25%, #f8eddc 50%, #f0e0cc 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+/* ===== Button Base ===== */
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #a84e06 0%, #c9620a 100%);
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  border-radius: var(--radius-btn);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(201, 98, 10, 0.3);
+  font-family: var(--font-sans);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(201, 98, 10, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(201, 98, 10, 0.3);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
