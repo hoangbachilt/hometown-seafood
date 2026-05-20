@@ -1,145 +1,269 @@
 "use client";
 
+import { Product } from "@/lib/supabase";
+import { useCart } from "@/lib/cart-context";
 import Image from "next/image";
 import { useState } from "react";
-import { Product } from "@/lib/supabase";
-import QuantityModal from "./quantity-modal";
+import ProductDetailSheet from "./product-detail-sheet";
+import { PRODUCT_IMAGES_MAP } from "@/lib/data";
 
-type Props = {
+export default function ProductCard({
+  product,
+}: {
   product: Product;
-};
+}) {
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const { items, addItem, updateQuantity } = useCart();
 
-export default function ProductCard({ product }: Props) {
-  const [modalOpen, setModalOpen] = useState(false);
+  const cartItem = items.find((i) => i.productId === product.id);
+  const initialQuantity = cartItem ? cartItem.quantity : 0;
 
-  const formattedPrice = new Intl.NumberFormat("vi-VN").format(
-    product.price_per_kg
-  );
+  const extraImages = PRODUCT_IMAGES_MAP[product.id] || [];
+  const displayImage = product.image_url || extraImages[0];
+  const isVideo = displayImage?.toLowerCase().endsWith(".mp4") || displayImage?.toLowerCase().endsWith(".webm");
+
+  const handleAdd = () => {
+    addItem(product, 1);
+  };
+
+  const handleIncrease = () => {
+    updateQuantity(product, initialQuantity + 1);
+  };
+
+  const handleDecrease = () => {
+    updateQuantity(product, Math.max(0, initialQuantity - 1));
+  };
+
+  // Earthen Tides: Organic shapes for image placeholders
+  const organicClasses = ["shape-organic-1", "shape-organic-2", "shape-organic-3"];
+  const shapeClass = organicClasses[product.name.length % organicClasses.length];
 
   return (
-    <>
+    <div
+      className="animate-slide-up"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "0.75rem",
+        padding: "0.5rem",
+      }}
+    >
+      {/* Organic Image or Placeholder */}
       <div
+        className={`${shapeClass} shadow-card`}
         style={{
-          backgroundColor: "var(--color-card)",
-          borderRadius: "var(--radius-card)",
-          border: "1px solid var(--color-border-light)",
+          width: "100%",
+          aspectRatio: "1 / 1",
+          backgroundColor: "var(--color-seafoam)",
           overflow: "hidden",
-          transition: "box-shadow 0.2s ease, transform 0.2s ease",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "relative",
+          transition: "transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)",
         }}
-        className="shadow-card"
         onMouseEnter={(e) => {
-          (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)";
+          (e.currentTarget as HTMLElement).style.transform = "scale(1.02)";
         }}
         onMouseLeave={(e) => {
-          (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
+          (e.currentTarget as HTMLElement).style.transform = "scale(1)";
         }}
       >
-        {/* Product Image */}
         <div
-          style={{
-            position: "relative",
-            width: "100%",
-            aspectRatio: "4/3",
-            backgroundColor: "var(--color-bg-alt)",
-            overflow: "hidden",
-          }}
+          onClick={() => setIsSheetOpen(true)}
+          style={{ width: "100%", height: "100%", position: "relative" }}
         >
-          {product.image_url ? (
-            <Image
-              src={product.image_url}
-              alt={product.name}
-              fill
-              style={{ objectFit: "cover" }}
-              sizes="(max-width: 480px) 50vw, 240px"
-            />
+          {displayImage ? (
+            isVideo ? (
+              <video
+                src={displayImage}
+                autoPlay
+                muted
+                loop
+                playsInline
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              <Image
+                src={displayImage}
+                alt={product.name}
+                fill
+                sizes="(max-width: 768px) 50vw, 33vw"
+                style={{ objectFit: "cover" }}
+              />
+            )
           ) : (
-            <div
-              style={{
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "3rem",
-                background:
-                  "linear-gradient(135deg, var(--color-bg-alt) 0%, var(--color-border-light) 100%)",
-              }}
-            >
-              🐟
-            </div>
+            <span style={{ fontSize: "2.5rem", opacity: 0.5, display: "flex", justifyContent: "center", alignItems: "center", width: "100%", height: "100%" }}>🐟</span>
           )}
-        </div>
-
-        {/* Product Info */}
-        <div style={{ padding: "0.75rem" }}>
-          <h3
-            style={{
-              fontSize: "0.875rem",
-              fontWeight: 700,
-              color: "var(--color-text)",
-              marginBottom: "0.25rem",
-              lineHeight: 1.3,
-            }}
-          >
-            {product.name}
-          </h3>
-          <p
-            style={{
-              fontSize: "0.8rem",
-              color: "var(--color-accent)",
-              fontWeight: 800,
-              marginBottom: "0.625rem",
-            }}
-          >
-            {formattedPrice}đ
-            <span
-              style={{
-                fontSize: "0.7rem",
-                color: "var(--color-text-muted)",
-                fontWeight: 600,
-              }}
-            >
-              {" "}/ kg
-            </span>
-          </p>
-
-          <button
-            onClick={() => setModalOpen(true)}
-            style={{
-              width: "100%",
-              padding: "0.5rem",
-              backgroundColor: "var(--color-accent)",
-              color: "white",
-              borderRadius: "var(--radius-btn)",
-              border: "none",
-              fontSize: "0.8rem",
-              fontWeight: 700,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "0.25rem",
-              transition: "background-color 0.2s ease, transform 0.15s ease",
-              fontFamily: "var(--font-sans)",
-            }}
-            onMouseDown={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.transform = "scale(0.96)";
-            }}
-            onMouseUp={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
-            }}
-          >
-            <span style={{ fontSize: "1rem" }}>+</span> Thêm
-          </button>
         </div>
       </div>
 
-      {modalOpen && (
-        <QuantityModal
-          product={product}
-          onClose={() => setModalOpen(false)}
-        />
-      )}
-    </>
+      {/* Minimalist Info */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem", padding: "0 0.25rem" }}>
+        <h3
+          style={{
+            fontSize: "0.95rem",
+            fontWeight: 700,
+            color: "var(--color-text)",
+            lineHeight: 1.3,
+          }}
+          className="text-balance"
+        >
+          {product.name}
+        </h3>
+        <p
+          style={{
+            fontSize: "0.85rem",
+            fontWeight: 400, // whisper-quiet
+            color: "var(--color-text-muted)",
+          }}
+        >
+          {new Intl.NumberFormat("vi-VN").format(product.price_per_kg)}đ/kg
+        </p>
+      </div>
+
+      {/* Inline Progressive Stepper */}
+      <div style={{ marginTop: "auto", minHeight: "36px", display: "flex", alignItems: "center" }}>
+        {initialQuantity === 0 ? (
+          <button
+            onClick={handleAdd}
+            className="shadow-tactile"
+            style={{
+              padding: "0.5rem 1rem",
+              backgroundColor: "transparent",
+              color: "var(--color-terracotta)",
+              border: "1.5px solid var(--color-terracotta)",
+              borderRadius: "var(--radius-pill)",
+              fontSize: "0.8rem",
+              fontWeight: 700,
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              const t = e.currentTarget as HTMLElement;
+              t.style.backgroundColor = "var(--color-terracotta)";
+              t.style.color = "var(--color-sand)";
+            }}
+            onMouseLeave={(e) => {
+              const t = e.currentTarget as HTMLElement;
+              t.style.backgroundColor = "transparent";
+              t.style.color = "var(--color-terracotta)";
+            }}
+            onMouseDown={(e) => {
+              (e.currentTarget as HTMLElement).style.transform = "scale(0.96)";
+            }}
+            onMouseUp={(e) => {
+              (e.currentTarget as HTMLElement).style.transform = "scale(1)";
+            }}
+          >
+            + Thêm
+          </button>
+        ) : (
+          <div
+            className="animate-tide-in"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              backgroundColor: "var(--color-terracotta)",
+              borderRadius: "var(--radius-pill)",
+              padding: "0.25rem",
+              color: "var(--color-sand)",
+              boxShadow: "0 4px 10px rgba(196, 90, 54, 0.2)",
+            }}
+          >
+            <button
+              onClick={handleDecrease}
+              style={{
+                width: "44px", // Touch target size Apple HIG
+                height: "44px",
+                borderRadius: "50%",
+                border: "none",
+                backgroundColor: "transparent", // Make the actual visual button smaller via pseudo element or just keep the background small
+                color: "inherit",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+              }}
+              onMouseDown={(e) => {
+                const child = e.currentTarget.firstElementChild as HTMLElement;
+                if (child) child.style.transform = "scale(0.85)";
+              }}
+              onMouseUp={(e) => {
+                const child = e.currentTarget.firstElementChild as HTMLElement;
+                if (child) child.style.transform = "scale(1)";
+              }}
+            >
+              {/* Visual Button */}
+              <div
+                style={{
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "50%",
+                  backgroundColor: "rgba(255, 255, 255, 0.2)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "1.2rem",
+                  transition: "transform 0.1s",
+                }}
+              >
+                -
+              </div>
+            </button>
+            <span style={{ margin: "0 0.25rem", fontSize: "0.85rem", fontWeight: 800, width: "32px", textAlign: "center" }}>
+              {initialQuantity} kg
+            </span>
+            <button
+              onClick={handleIncrease}
+              style={{
+                width: "44px", // Touch target size Apple HIG
+                height: "44px",
+                borderRadius: "50%",
+                border: "none",
+                backgroundColor: "transparent",
+                color: "inherit",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+              }}
+              onMouseDown={(e) => {
+                const child = e.currentTarget.firstElementChild as HTMLElement;
+                if (child) child.style.transform = "scale(0.85)";
+              }}
+              onMouseUp={(e) => {
+                const child = e.currentTarget.firstElementChild as HTMLElement;
+                if (child) child.style.transform = "scale(1)";
+              }}
+            >
+              {/* Visual Button */}
+              <div
+                style={{
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "50%",
+                  backgroundColor: "rgba(255, 255, 255, 0.2)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "1.2rem",
+                  transition: "transform 0.1s",
+                }}
+              >
+                +
+              </div>
+            </button>
+          </div>
+        )}
+      </div>
+
+      <ProductDetailSheet
+        isOpen={isSheetOpen}
+        onClose={() => setIsSheetOpen(false)}
+        product={product}
+        initialQuantity={initialQuantity}
+      />
+    </div>
   );
 }

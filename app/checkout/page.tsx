@@ -15,7 +15,6 @@ type FormData = {
 type FieldError = Partial<Record<keyof FormData, string>>;
 
 function validatePhone(phone: string): boolean {
-  // Vietnamese phone numbers: 10 digits, starts with 0
   return /^(0[3-9]\d{8})$/.test(phone.replace(/\s/g, ""));
 }
 
@@ -28,7 +27,6 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
-  // Auto-fill from localStorage
   useEffect(() => {
     const saved = getCustomerInfo();
     if (saved) {
@@ -40,7 +38,6 @@ export default function CheckoutPage() {
     }
   }, []);
 
-  // Redirect if cart is empty
   useEffect(() => {
     if (items.length === 0) {
       router.replace("/cart");
@@ -51,20 +48,19 @@ export default function CheckoutPage() {
 
   const validate = (): boolean => {
     const newErrors: FieldError = {};
-    if (!form.name.trim()) newErrors.name = "Vui lòng nhập họ tên";
+    if (!form.name.trim()) newErrors.name = "Bắt buộc";
     if (!form.phone.trim()) {
-      newErrors.phone = "Vui lòng nhập số điện thoại";
+      newErrors.phone = "Bắt buộc";
     } else if (!validatePhone(form.phone)) {
-      newErrors.phone = "Số điện thoại không hợp lệ (10 số, bắt đầu bằng 0)";
+      newErrors.phone = "Chưa hợp lệ";
     }
-    if (!form.address.trim()) newErrors.address = "Vui lòng nhập địa chỉ giao hàng";
+    if (!form.address.trim()) newErrors.address = "Bắt buộc";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async () => {
     if (!validate()) return;
-
     setLoading(true);
     setApiError(null);
 
@@ -91,337 +87,153 @@ export default function CheckoutPage() {
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        throw new Error(data.error ?? "Đặt hàng thất bại. Vui lòng thử lại.");
+        throw new Error(data.error ?? "Có lỗi xảy ra");
       }
 
-      // Save customer info for next time
       saveCustomerInfo({ name: form.name, phone: form.phone, address: form.address });
-
-      // Clear cart
       clearCart();
-
-      // Navigate to success
       router.push(`/success?orderId=${data.orderId}`);
     } catch (err) {
-      setApiError(err instanceof Error ? err.message : "Có lỗi xảy ra. Vui lòng thử lại.");
+      setApiError(err instanceof Error ? err.message : "Vui lòng thử lại");
     } finally {
       setLoading(false);
     }
   };
 
+  // Minimalist input style
   const inputStyle = (hasError: boolean) => ({
     width: "100%",
-    padding: "0.75rem 1rem",
-    backgroundColor: "white",
-    border: `1.5px solid ${hasError ? "var(--color-error)" : "var(--color-border)"}`,
-    borderRadius: "0.75rem",
-    fontSize: "1rem",
-    color: "var(--color-text)",
+    padding: "0.5rem 0",
+    backgroundColor: "transparent",
+    border: "none",
+    borderBottom: `2px solid ${hasError ? "var(--color-error)" : "var(--color-abyssal-muted)"}`,
+    borderRadius: "0",
+    fontSize: "1.1rem",
+    color: "var(--color-abyssal)",
     fontFamily: "var(--font-sans)",
     outline: "none",
-    transition: "border-color 0.2s ease",
+    transition: "border-color 0.3s ease",
     boxSizing: "border-box" as const,
   });
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "var(--color-bg)" }}>
-      {/* Header */}
+    <div style={{ minHeight: "100vh" }}>
       <header
         style={{
-          backgroundColor: "white",
-          borderBottom: "1px solid var(--color-border-light)",
-          padding: "1rem",
+          padding: "2rem 1.5rem 1rem",
           display: "flex",
           alignItems: "center",
-          gap: "0.75rem",
-          position: "sticky",
-          top: 0,
-          zIndex: 10,
+          gap: "1rem",
         }}
       >
         <button
           onClick={() => router.back()}
+          aria-label="Quay lại"
           style={{
-            width: "36px",
-            height: "36px",
-            borderRadius: "50%",
-            border: "1.5px solid var(--color-border)",
-            background: "transparent",
+            background: "none",
+            border: "none",
+            fontSize: "1.5rem",
+            color: "var(--color-abyssal)",
             cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "var(--color-text)",
+            padding: 0,
           }}
         >
           ←
         </button>
         <h1
           style={{
-            fontSize: "1.125rem",
+            fontSize: "1.5rem",
             fontWeight: 800,
-            color: "var(--color-text)",
+            color: "var(--color-abyssal)",
+            letterSpacing: "-0.02em",
           }}
         >
-          Xác nhận đơn hàng
+          Giao hàng
         </h1>
       </header>
 
-      <main style={{ padding: "1rem" }}>
-        {/* Order summary */}
-        <div
-          style={{
-            backgroundColor: "var(--color-card)",
-            borderRadius: "var(--radius-card)",
-            border: "1px solid var(--color-border-light)",
-            padding: "1rem",
-            marginBottom: "1rem",
-          }}
-        >
-          <h2
-            style={{
-              fontSize: "0.75rem",
-              fontWeight: 700,
-              color: "var(--color-text-muted)",
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-              marginBottom: "0.75rem",
-            }}
-          >
-            📦 Tóm tắt đơn hàng
-          </h2>
-
-          {items.map((item) => (
-            <div
-              key={item.productId}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: "0.375rem",
-                fontSize: "0.875rem",
-              }}
-            >
-              <span style={{ color: "var(--color-text-muted)" }}>
-                {item.name} × {item.quantity}kg
-              </span>
-              <span style={{ fontWeight: 700, color: "var(--color-text)" }}>
-                {new Intl.NumberFormat("vi-VN").format(item.subtotal)}đ
-              </span>
-            </div>
-          ))}
-
-          <div
-            style={{
-              borderTop: "1.5px dashed var(--color-border)",
-              marginTop: "0.75rem",
-              paddingTop: "0.75rem",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <span style={{ fontWeight: 700, fontSize: "0.9rem" }}>Tổng cộng</span>
-            <span
-              style={{
-                fontWeight: 800,
-                color: "var(--color-accent)",
-                fontSize: "1.2rem",
-              }}
-            >
-              {formattedTotal}đ
-            </span>
-          </div>
-        </div>
-
-        {/* Customer info form */}
-        <div
-          style={{
-            backgroundColor: "var(--color-card)",
-            borderRadius: "var(--radius-card)",
-            border: "1px solid var(--color-border-light)",
-            padding: "1rem",
-            marginBottom: "1rem",
-          }}
-        >
-          <h2
-            style={{
-              fontSize: "0.75rem",
-              fontWeight: 700,
-              color: "var(--color-text-muted)",
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-              marginBottom: "1rem",
-            }}
-          >
-            👤 Thông tin nhận hàng
-          </h2>
-
-          {/* Name */}
-          <div style={{ marginBottom: "0.875rem" }}>
-            <label
-              style={{
-                display: "block",
-                fontSize: "0.8rem",
-                fontWeight: 700,
-                color: "var(--color-text)",
-                marginBottom: "0.375rem",
-              }}
-            >
-              Họ và tên *
+      <main style={{ padding: "0 1.5rem 1rem" }} className="animate-slide-up">
+        {/* Minimal Form */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "2rem", marginTop: "1rem" }}>
+          <div style={{ position: "relative" }}>
+            <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--color-terracotta)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              Tên người nhận
             </label>
             <input
-              id="checkout-name"
               type="text"
-              placeholder="Nguyễn Văn A"
+              placeholder="VD: Hải Anh"
               value={form.name}
               onChange={(e) => {
-                setForm((f) => ({ ...f, name: e.target.value }));
-                if (errors.name) setErrors((er) => ({ ...er, name: undefined }));
+                setForm({ ...form, name: e.target.value });
+                if (errors.name) setErrors({ ...errors, name: undefined });
               }}
               style={inputStyle(!!errors.name)}
+              className="earthen-input"
             />
-            {errors.name && (
-              <p style={{ fontSize: "0.75rem", color: "var(--color-error)", marginTop: "0.25rem" }}>
-                {errors.name}
-              </p>
-            )}
+            {errors.name && <span style={{ position: "absolute", right: 0, top: 0, fontSize: "0.75rem", color: "var(--color-error)" }}>{errors.name}</span>}
           </div>
 
-          {/* Phone */}
-          <div style={{ marginBottom: "0.875rem" }}>
-            <label
-              style={{
-                display: "block",
-                fontSize: "0.8rem",
-                fontWeight: 700,
-                color: "var(--color-text)",
-                marginBottom: "0.375rem",
-              }}
-            >
-              Số điện thoại *
+          <div style={{ position: "relative" }}>
+            <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--color-terracotta)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              Số điện thoại
             </label>
             <input
-              id="checkout-phone"
               type="tel"
-              placeholder="0901234567"
+              placeholder="09..."
               value={form.phone}
               onChange={(e) => {
-                setForm((f) => ({ ...f, phone: e.target.value }));
-                if (errors.phone) setErrors((er) => ({ ...er, phone: undefined }));
+                setForm({ ...form, phone: e.target.value });
+                if (errors.phone) setErrors({ ...errors, phone: undefined });
               }}
               style={inputStyle(!!errors.phone)}
+              className="earthen-input"
             />
-            {errors.phone && (
-              <p style={{ fontSize: "0.75rem", color: "var(--color-error)", marginTop: "0.25rem" }}>
-                {errors.phone}
-              </p>
-            )}
+            {errors.phone && <span style={{ position: "absolute", right: 0, top: 0, fontSize: "0.75rem", color: "var(--color-error)" }}>{errors.phone}</span>}
           </div>
 
-          {/* Address */}
-          <div>
-            <label
-              style={{
-                display: "block",
-                fontSize: "0.8rem",
-                fontWeight: 700,
-                color: "var(--color-text)",
-                marginBottom: "0.375rem",
-              }}
-            >
-              Địa chỉ giao hàng *
+          <div style={{ position: "relative" }}>
+            <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--color-terracotta)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              Địa chỉ chi tiết
             </label>
             <textarea
-              id="checkout-address"
-              placeholder="Số nhà, tên đường, phường/xã, quận/huyện..."
+              placeholder="Số nhà, tên đường..."
               value={form.address}
               onChange={(e) => {
-                setForm((f) => ({ ...f, address: e.target.value }));
-                if (errors.address) setErrors((er) => ({ ...er, address: undefined }));
+                setForm({ ...form, address: e.target.value });
+                if (errors.address) setErrors({ ...errors, address: undefined });
               }}
-              rows={3}
-              style={{
-                ...inputStyle(!!errors.address),
-                resize: "vertical",
-                minHeight: "80px",
-              }}
+              rows={2}
+              style={{ ...inputStyle(!!errors.address), resize: "none" }}
+              className="earthen-input"
             />
-            {errors.address && (
-              <p style={{ fontSize: "0.75rem", color: "var(--color-error)", marginTop: "0.25rem" }}>
-                {errors.address}
-              </p>
-            )}
+            {errors.address && <span style={{ position: "absolute", right: 0, top: 0, fontSize: "0.75rem", color: "var(--color-error)" }}>{errors.address}</span>}
           </div>
         </div>
 
-        {/* COD notice */}
-        <div
-          style={{
-            padding: "0.75rem 1rem",
-            backgroundColor: "#f0fdf4",
-            border: "1px solid #bbf7d0",
-            borderRadius: "0.75rem",
-            marginBottom: "1rem",
-            display: "flex",
-            gap: "0.5rem",
-            alignItems: "flex-start",
-          }}
-        >
-          <span style={{ fontSize: "1rem", flexShrink: 0 }}>💵</span>
-          <div>
-            <p style={{ fontSize: "0.8rem", color: "#15803d", fontWeight: 700, marginBottom: "0.125rem" }}>
-              Thanh toán khi nhận hàng (COD)
-            </p>
-            <p style={{ fontSize: "0.75rem", color: "#166534" }}>
-              Bạn chỉ cần trả tiền khi nhận được hàng. Shop sẽ liên hệ xác nhận trước khi giao.
-            </p>
-          </div>
+        {/* COD Notice */}
+        <div style={{ marginTop: "2.5rem", padding: "1.25rem", backgroundColor: "var(--color-seafoam)", borderRadius: "var(--radius-organic-1)" }}>
+          <p style={{ fontSize: "0.85rem", color: "var(--color-abyssal-light)", lineHeight: 1.5 }}>
+            <span style={{ fontWeight: 800 }}>Thanh toán khi nhận hàng (COD).</span><br />
+            Shop sẽ liên hệ xác nhận trước khi giao.
+          </p>
         </div>
 
-        {/* API Error */}
         {apiError && (
-          <div
-            style={{
-              padding: "0.75rem 1rem",
-              backgroundColor: "#fff5f5",
-              border: "1px solid #fecaca",
-              borderRadius: "0.75rem",
-              marginBottom: "1rem",
-              color: "var(--color-error)",
-              fontSize: "0.875rem",
-              fontWeight: 600,
-            }}
-          >
-            ⚠️ {apiError}
-          </div>
+          <p style={{ color: "var(--color-error)", fontSize: "0.85rem", marginTop: "1rem", textAlign: "center" }}>
+            {apiError}
+          </p>
         )}
 
-        {/* Submit button */}
-        <button
-          id="checkout-submit"
-          onClick={handleSubmit}
-          disabled={loading || items.length === 0}
-          className="btn-primary"
-        >
-          {loading ? (
-            <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <span
-                style={{
-                  width: "18px",
-                  height: "18px",
-                  border: "2px solid rgba(255,255,255,0.4)",
-                  borderTopColor: "white",
-                  borderRadius: "50%",
-                  animation: "spin 0.7s linear infinite",
-                  display: "inline-block",
-                }}
-              />
-              Đang xử lý...
-            </span>
-          ) : (
-            `🎉 Chốt đơn — ${formattedTotal}đ`
-          )}
-        </button>
+        <div style={{ marginTop: "2rem" }}>
+          <button
+            onClick={handleSubmit}
+            disabled={loading || items.length === 0}
+            className="btn-primary"
+            style={{ padding: "1.25rem" }}
+          >
+            {loading ? "Đang xử lý..." : `Chốt đơn — ${formattedTotal}đ`}
+          </button>
+        </div>
 
         <div className="pb-nav" />
       </main>
@@ -429,12 +241,12 @@ export default function CheckoutPage() {
       <BottomNav />
 
       <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
+        .earthen-input:focus {
+          border-color: var(--color-abyssal) !important;
         }
-        input:focus, textarea:focus {
-          border-color: var(--color-primary) !important;
-          box-shadow: 0 0 0 3px rgba(124, 79, 42, 0.1);
+        .earthen-input::placeholder {
+          color: rgba(26, 47, 76, 0.3);
+          font-weight: 300;
         }
       `}</style>
     </div>

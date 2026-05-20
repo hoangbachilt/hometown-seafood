@@ -19,6 +19,7 @@ export type CartItem = {
   pricePerKg: number;
   quantity: number; // số kg
   subtotal: number;
+  imageUrl: string | null;
 };
 
 export type CustomerInfo = {
@@ -35,7 +36,7 @@ type CartState = {
 type CartAction =
   | { type: "HYDRATE"; payload: CartItem[] }
   | { type: "ADD_ITEM"; payload: CartItem }
-  | { type: "UPDATE_QUANTITY"; payload: { productId: string; quantity: number } }
+  | { type: "UPDATE_QUANTITY"; payload: { product: { id: string; name: string; price_per_kg: number; image_url: string | null }; quantity: number } }
   | { type: "REMOVE_ITEM"; payload: { productId: string } }
   | { type: "CLEAR_CART" };
 
@@ -44,8 +45,8 @@ type CartContextType = {
   hydrated: boolean;
   totalAmount: number;
   totalItems: number;
-  addItem: (product: { id: string; name: string; pricePerKg: number }, quantity: number) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addItem: (product: { id: string; name: string; price_per_kg: number; image_url: string | null }, quantity: number) => void;
+  updateQuantity: (product: { id: string; name: string; price_per_kg: number; image_url: string | null }, quantity: number) => void;
   removeItem: (productId: string) => void;
   clearCart: () => void;
 };
@@ -85,26 +86,44 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     }
 
     case "UPDATE_QUANTITY": {
-      if (action.payload.quantity <= 0) {
+      const { product, quantity } = action.payload;
+      if (quantity <= 0) {
         return {
           ...state,
-          items: state.items.filter(
-            (i) => i.productId !== action.payload.productId
-          ),
+          items: state.items.filter((i) => i.productId !== product.id),
         };
       }
-      return {
-        ...state,
-        items: state.items.map((i) =>
-          i.productId === action.payload.productId
-            ? {
-                ...i,
-                quantity: action.payload.quantity,
-                subtotal: action.payload.quantity * i.pricePerKg,
-              }
-            : i
-        ),
-      };
+      
+      const existing = state.items.find((i) => i.productId === product.id);
+      if (existing) {
+        return {
+          ...state,
+          items: state.items.map((i) =>
+            i.productId === product.id
+              ? {
+                  ...i,
+                  quantity: quantity,
+                  subtotal: quantity * i.pricePerKg,
+                }
+              : i
+          ),
+        };
+      } else {
+        return {
+          ...state,
+          items: [
+            ...state.items,
+            {
+              productId: product.id,
+              name: product.name,
+              pricePerKg: product.price_per_kg,
+              quantity: quantity,
+              subtotal: quantity * product.price_per_kg,
+              imageUrl: product.image_url,
+            }
+          ]
+        };
+      }
     }
 
     case "REMOVE_ITEM":
@@ -168,7 +187,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addItem = useCallback(
     (
-      product: { id: string; name: string; pricePerKg: number },
+      product: { id: string; name: string; price_per_kg: number; image_url: string | null },
       quantity: number
     ) => {
       dispatch({
@@ -176,17 +195,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
         payload: {
           productId: product.id,
           name: product.name,
-          pricePerKg: product.pricePerKg,
+          pricePerKg: product.price_per_kg,
           quantity,
-          subtotal: quantity * product.pricePerKg,
+          subtotal: quantity * product.price_per_kg,
+          imageUrl: product.image_url,
         },
       });
     },
     []
   );
 
-  const updateQuantity = useCallback((productId: string, quantity: number) => {
-    dispatch({ type: "UPDATE_QUANTITY", payload: { productId, quantity } });
+  const updateQuantity = useCallback((product: { id: string; name: string; price_per_kg: number; image_url: string | null }, quantity: number) => {
+    dispatch({ type: "UPDATE_QUANTITY", payload: { product, quantity } as any });
   }, []);
 
   const removeItem = useCallback((productId: string) => {

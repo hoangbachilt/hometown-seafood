@@ -4,98 +4,39 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCart } from "@/lib/cart-context";
 
-const navItems = [
-  {
-    href: "/",
-    label: "Sản phẩm",
-    icon: (active: boolean) => (
-      <svg
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={active ? 2.5 : 2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-        <polyline points="9 22 9 12 15 12 15 22" />
-      </svg>
-    ),
-  },
-  {
-    href: "/cart",
-    label: "Giỏ hàng",
-    icon: (active: boolean) => (
-      <svg
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={active ? 2.5 : 2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <circle cx="9" cy="21" r="1" />
-        <circle cx="20" cy="21" r="1" />
-        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-      </svg>
-    ),
-    showBadge: true,
-  },
-  {
-    href: "/profile",
-    label: "Thông tin",
-    icon: (active: boolean) => (
-      <svg
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={active ? 2.5 : 2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-        <circle cx="12" cy="7" r="4" />
-      </svg>
-    ),
-  },
-];
-
 export default function BottomNav() {
   const pathname = usePathname();
   const { totalItems } = useCart();
 
-  // Hide bottom nav on success page
-  if (pathname === "/success") return null;
+  const navItems = [
+    { href: "/", label: "Hải sản", icon: "🌊" },
+    { href: "/cart", label: "Giỏ hàng", icon: "🛒", badge: totalItems },
+    { href: "/profile", label: "Cá nhân", icon: "👤" },
+  ];
 
   return (
     <nav
       style={{
         position: "fixed",
-        bottom: 0,
+        bottom: "env(safe-area-inset-bottom, 1rem)", // floating above bottom
         left: "50%",
         transform: "translateX(-50%)",
-        width: "100%",
-        maxWidth: "480px",
-        backgroundColor: "white",
-        borderTop: "1px solid var(--color-border-light)",
+        width: "calc(100% - 2rem)",
+        maxWidth: "400px",
+        backgroundColor: "rgba(244, 239, 230, 0.85)", // Sand color with transparency
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        border: "1px solid rgba(26, 47, 76, 0.05)", // Abyssal Blue very light border
+        borderRadius: "var(--radius-pill)",
         display: "flex",
-        alignItems: "stretch",
-        paddingBottom: "env(safe-area-inset-bottom)",
+        justifyContent: "space-between",
+        padding: "0.5rem 1rem",
         zIndex: 50,
-        boxShadow: "0 -4px 20px rgba(124, 79, 42, 0.08)",
+        boxShadow: "0 8px 32px rgba(26, 47, 76, 0.12)", // Soft floating shadow
       }}
     >
       {navItems.map((item) => {
-        const isActive =
-          item.href === "/"
-            ? pathname === "/"
-            : pathname.startsWith(item.href);
+        const isActive = pathname === item.href;
 
         return (
           <Link
@@ -107,64 +48,79 @@ export default function BottomNav() {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              padding: "0.625rem 0.5rem",
-              gap: "0.25rem",
-              color: isActive ? "var(--color-accent)" : "var(--color-text-light)",
-              transition: "color 0.2s ease",
+              gap: "0.2rem",
+              padding: "0.5rem 0",
               textDecoration: "none",
               position: "relative",
+              color: isActive ? "var(--color-terracotta)" : "var(--color-text-muted)",
+              transition: "all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)",
             }}
           >
-            <span style={{ position: "relative" }}>
-              {item.icon(isActive)}
-              {item.showBadge && totalItems > 0 && (
-                <span
+            {/* Active Indicator (Fluid bubble) */}
+            {isActive && (
+              <div
+                style={{
+                  position: "absolute",
+                  width: "48px",
+                  height: "48px",
+                  backgroundColor: "rgba(196, 90, 54, 0.1)", // Terracotta light
+                  borderRadius: "var(--radius-pill)",
+                  zIndex: -1,
+                  animation: "badgePop 0.3s ease-out",
+                }}
+              />
+            )}
+
+            <div style={{ position: "relative" }}>
+              <span
+                style={{
+                  fontSize: "1.25rem",
+                  filter: isActive ? "grayscale(0)" : "grayscale(0.8) opacity(0.7)",
+                  transition: "all 0.3s ease",
+                  display: "inline-block",
+                  transform: isActive ? "translateY(-2px)" : "translateY(0)",
+                }}
+              >
+                {item.icon}
+              </span>
+              
+              {/* Badge */}
+              {item.badge !== undefined && item.badge > 0 && (
+                <div
+                  className="animate-badge-pop"
                   style={{
                     position: "absolute",
                     top: "-6px",
-                    right: "-8px",
-                    backgroundColor: "var(--color-accent)",
-                    color: "white",
+                    right: "-10px",
+                    backgroundColor: "var(--color-terracotta)",
+                    color: "var(--color-sand)",
                     fontSize: "0.65rem",
                     fontWeight: 800,
-                    lineHeight: 1,
-                    minWidth: "18px",
+                    width: "18px",
                     height: "18px",
-                    borderRadius: "9999px",
+                    borderRadius: "50%",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    padding: "0 4px",
-                    animation: "badgePop 0.3s ease-out",
+                    border: "2px solid var(--color-sand)",
+                    boxShadow: "0 2px 4px rgba(196, 90, 54, 0.3)",
                   }}
                 >
-                  {totalItems > 99 ? "99+" : Math.round(totalItems * 10) / 10}
-                </span>
+                  {item.badge}
+                </div>
               )}
-            </span>
+            </div>
+            
+            {/* Whisper-quiet text */}
             <span
               style={{
                 fontSize: "0.65rem",
-                fontWeight: isActive ? 700 : 500,
+                fontWeight: isActive ? 800 : 600,
                 letterSpacing: "0.02em",
               }}
             >
               {item.label}
             </span>
-            {isActive && (
-              <span
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  width: "32px",
-                  height: "2px",
-                  backgroundColor: "var(--color-accent)",
-                  borderRadius: "0 0 4px 4px",
-                }}
-              />
-            )}
           </Link>
         );
       })}

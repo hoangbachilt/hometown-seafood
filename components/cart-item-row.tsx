@@ -1,178 +1,208 @@
 "use client";
 
-import { CartItem, useCart } from "@/lib/cart-context";
+import { useCart } from "@/lib/cart-context";
+import Image from "next/image";
 
-type Props = {
-  item: CartItem;
-};
+export default function CartItemRow({
+  item,
+}: {
+  item: {
+    productId: string;
+    name: string;
+    pricePerKg: number;
+    quantity: number;
+    subtotal: number;
+    imageUrl: string | null;
+  };
+}) {
+  const { updateQuantity } = useCart();
 
-export default function CartItemRow({ item }: Props) {
-  const { updateQuantity, removeItem } = useCart();
-  const STEP = 0.5;
+  // Recreate partial Product object for the update context
+  const dummyProduct = {
+    id: item.productId,
+    name: item.name,
+    price_per_kg: item.pricePerKg,
+    image_url: item.imageUrl,
+    is_available: true,
+    sort_order: 0,
+    created_at: "",
+  };
 
-  const formattedSubtotal = new Intl.NumberFormat("vi-VN").format(item.subtotal);
-  const formattedPrice = new Intl.NumberFormat("vi-VN").format(item.pricePerKg);
+  const organicClasses = ["shape-organic-1", "shape-organic-2", "shape-organic-3"];
+  const shapeClass = organicClasses[item.name.length % organicClasses.length];
+
+  const handleIncrease = () => {
+    updateQuantity(dummyProduct, item.quantity + 1);
+  };
+
+  const handleDecrease = () => {
+    updateQuantity(dummyProduct, Math.max(0, item.quantity - 1));
+  };
 
   return (
     <div
+      className="animate-slide-up"
       style={{
-        backgroundColor: "var(--color-card)",
-        borderRadius: "var(--radius-card)",
-        border: "1px solid var(--color-border-light)",
-        padding: "0.875rem",
         display: "flex",
-        gap: "0.75rem",
+        gap: "1rem",
         alignItems: "center",
+        padding: "1rem 0",
+        borderBottom: "1px solid var(--color-border)",
       }}
     >
-      {/* Emoji icon */}
+      {/* Organic Image Thumbnail */}
       <div
+        className={shapeClass}
         style={{
-          width: "48px",
-          height: "48px",
-          borderRadius: "0.75rem",
-          backgroundColor: "var(--color-bg-alt)",
+          width: "64px",
+          height: "64px",
+          backgroundColor: "var(--color-seafoam)",
+          flexShrink: 0,
+          overflow: "hidden",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: "1.5rem",
-          flexShrink: 0,
+          position: "relative",
         }}
       >
-        🐟
+        {item.imageUrl ? (
+          <Image
+            src={item.imageUrl}
+            alt={item.name}
+            fill
+            sizes="64px"
+            style={{ objectFit: "cover" }}
+          />
+        ) : (
+          <span style={{ fontSize: "1.5rem", opacity: 0.5 }}>🐟</span>
+        )}
       </div>
 
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p
+        <h3
           style={{
-            fontSize: "0.875rem",
+            fontSize: "0.95rem",
             fontWeight: 700,
             color: "var(--color-text)",
-            marginBottom: "0.125rem",
+            marginBottom: "0.25rem",
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
           }}
         >
           {item.name}
+        </h3>
+        <p style={{ fontSize: "0.85rem", color: "var(--color-text-muted)" }}>
+          {new Intl.NumberFormat("vi-VN").format(item.pricePerKg)}đ/kg
         </p>
-        <p
+        <div
           style={{
-            fontSize: "0.75rem",
-            color: "var(--color-text-muted)",
-            marginBottom: "0.5rem",
+            marginTop: "0.25rem",
+            fontSize: "0.95rem",
+            fontWeight: 800,
+            color: "var(--color-terracotta)",
           }}
         >
-          {formattedPrice}đ/kg
-        </p>
-
-        {/* Qty controls */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <button
-            onClick={() =>
-              updateQuantity(item.productId, parseFloat((item.quantity - STEP).toFixed(1)))
-            }
-            style={{
-              width: "28px",
-              height: "28px",
-              borderRadius: "8px",
-              border: "1.5px solid var(--color-border)",
-              backgroundColor: "white",
-              color: "var(--color-primary)",
-              fontSize: "1rem",
-              fontWeight: 700,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              transition: "all 0.15s ease",
-            }}
-          >
-            −
-          </button>
-
-          <span
-            style={{
-              fontSize: "0.875rem",
-              fontWeight: 800,
-              color: "var(--color-text)",
-              minWidth: "40px",
-              textAlign: "center",
-            }}
-          >
-            {item.quantity} kg
-          </span>
-
-          <button
-            onClick={() =>
-              updateQuantity(item.productId, parseFloat((item.quantity + STEP).toFixed(1)))
-            }
-            style={{
-              width: "28px",
-              height: "28px",
-              borderRadius: "8px",
-              border: "none",
-              backgroundColor: "var(--color-accent)",
-              color: "white",
-              fontSize: "1rem",
-              fontWeight: 700,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              transition: "all 0.15s ease",
-            }}
-          >
-            +
-          </button>
+          {new Intl.NumberFormat("vi-VN").format(item.subtotal)}đ
         </div>
       </div>
 
-      {/* Subtotal + delete */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-          gap: "0.5rem",
-          flexShrink: 0,
-        }}
-      >
-        <p
+      {/* Tactile Action (Inline Stepper) */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", alignItems: "flex-end" }}>
+        <div
           style={{
-            fontSize: "0.9rem",
-            fontWeight: 800,
-            color: "var(--color-accent)",
-          }}
-        >
-          {formattedSubtotal}đ
-        </p>
-
-        <button
-          onClick={() => removeItem(item.productId)}
-          style={{
-            width: "28px",
-            height: "28px",
-            borderRadius: "8px",
-            border: "1.5px solid #fecaca",
-            backgroundColor: "#fff5f5",
-            color: "#e05252",
-            cursor: "pointer",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-            transition: "all 0.15s ease",
+            backgroundColor: "var(--color-sand)",
+            borderRadius: "var(--radius-pill)",
+            padding: "0 0.1rem", // minimal padding since buttons are 44x44
+            border: "1.5px solid var(--color-terracotta)",
+            color: "var(--color-terracotta)",
           }}
-          title="Xóa"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="3 6 5 6 21 6" />
-            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-            <path d="M10 11v6M14 11v6" />
-            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-          </svg>
-        </button>
+          <button
+            onClick={handleDecrease}
+            style={{
+              width: "44px",
+              height: "44px",
+              borderRadius: "50%",
+              border: "none",
+              backgroundColor: "transparent",
+              color: "inherit",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+            }}
+            onMouseDown={(e) => {
+              const child = e.currentTarget.firstElementChild as HTMLElement;
+              if (child) child.style.transform = "scale(0.85)";
+            }}
+            onMouseUp={(e) => {
+              const child = e.currentTarget.firstElementChild as HTMLElement;
+              if (child) child.style.transform = "scale(1)";
+            }}
+          >
+            <div
+              style={{
+                width: "24px",
+                height: "24px",
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "1rem",
+                fontWeight: 800,
+                transition: "transform 0.1s",
+              }}
+            >
+              -
+            </div>
+          </button>
+          <span style={{ margin: "0", fontSize: "0.8rem", fontWeight: 800, width: "32px", textAlign: "center" }}>
+            {item.quantity} kg
+          </span>
+          <button
+            onClick={handleIncrease}
+            style={{
+              width: "44px",
+              height: "44px",
+              borderRadius: "50%",
+              border: "none",
+              backgroundColor: "transparent",
+              color: "inherit",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+            }}
+            onMouseDown={(e) => {
+              const child = e.currentTarget.firstElementChild as HTMLElement;
+              if (child) child.style.transform = "scale(0.85)";
+            }}
+            onMouseUp={(e) => {
+              const child = e.currentTarget.firstElementChild as HTMLElement;
+              if (child) child.style.transform = "scale(1)";
+            }}
+          >
+            <div
+              style={{
+                width: "24px",
+                height: "24px",
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "1rem",
+                fontWeight: 800,
+                transition: "transform 0.1s",
+              }}
+            >
+              +
+            </div>
+          </button>
+        </div>
       </div>
     </div>
   );

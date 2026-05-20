@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { getCustomerInfo, saveCustomerInfo, CUSTOMER_KEY } from "@/lib/cart-context";
 import BottomNav from "@/components/bottom-nav";
 
@@ -12,7 +11,6 @@ type FormData = {
 };
 
 export default function ProfilePage() {
-  const router = useRouter();
   const [form, setForm] = useState<FormData>({ name: "", phone: "", address: "" });
   const [saved, setSaved] = useState(false);
   const [hasData, setHasData] = useState(false);
@@ -40,49 +38,44 @@ export default function ProfilePage() {
 
   const inputStyle = {
     width: "100%",
-    padding: "0.75rem 1rem",
-    backgroundColor: "white",
-    border: "1.5px solid var(--color-border)",
-    borderRadius: "0.75rem",
-    fontSize: "1rem",
-    color: "var(--color-text)",
+    padding: "0.5rem 0",
+    backgroundColor: "transparent",
+    border: "none",
+    borderBottom: "2px solid var(--color-abyssal-muted)",
+    borderRadius: "0",
+    fontSize: "1.1rem",
+    color: "var(--color-abyssal)",
     fontFamily: "var(--font-sans)",
     outline: "none",
+    transition: "border-color 0.3s ease",
     boxSizing: "border-box" as const,
   };
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "var(--color-bg)" }}>
-      {/* Header */}
+    <div style={{ minHeight: "100vh" }}>
       <header
         style={{
-          backgroundColor: "white",
-          borderBottom: "1px solid var(--color-border-light)",
-          padding: "1rem",
+          padding: "2rem 1.5rem 1rem",
           display: "flex",
           alignItems: "center",
-          gap: "0.75rem",
-          position: "sticky",
-          top: 0,
-          zIndex: 10,
+          justifyContent: "space-between",
         }}
       >
-        <span style={{ fontSize: "1.25rem" }}>👤</span>
         <h1
           style={{
-            fontSize: "1.125rem",
+            fontSize: "1.75rem",
             fontWeight: 800,
-            color: "var(--color-text)",
-            flex: 1,
+            color: "var(--color-abyssal)",
+            letterSpacing: "-0.02em",
           }}
         >
-          Thông tin của tôi
+          Sổ tay
         </h1>
         {hasData && (
           <button
             onClick={handleClear}
             style={{
-              fontSize: "0.75rem",
+              fontSize: "0.8rem",
               color: "var(--color-error)",
               fontWeight: 600,
               background: "none",
@@ -90,103 +83,66 @@ export default function ProfilePage() {
               cursor: "pointer",
             }}
           >
-            Xóa
+            Tẩy xóa
           </button>
         )}
       </header>
 
-      <main style={{ padding: "1rem" }}>
+      <main style={{ padding: "0 1.5rem 1rem" }} className="animate-slide-up">
         {/* Info note */}
         <div
           style={{
-            padding: "0.75rem 1rem",
-            backgroundColor: "#fffbeb",
-            border: "1px solid #fde68a",
-            borderRadius: "0.75rem",
-            marginBottom: "1rem",
-            display: "flex",
-            gap: "0.5rem",
-            alignItems: "flex-start",
+            padding: "1.25rem",
+            backgroundColor: "var(--color-seafoam)",
+            borderRadius: "var(--radius-organic-3)",
+            marginBottom: "2rem",
           }}
         >
-          <span style={{ fontSize: "1rem", flexShrink: 0 }}>💡</span>
-          <p style={{ fontSize: "0.8rem", color: "#92400e", fontWeight: 500 }}>
-            Thông tin được lưu trên thiết bị của bạn. Lần sau đặt hàng sẽ tự động điền vào form.
+          <p style={{ fontSize: "0.85rem", color: "var(--color-abyssal-light)", lineHeight: 1.5 }}>
+            Thông tin được lưu trên trình duyệt của bạn. Hệ thống sẽ tự động điền giúp bạn trong lần thả lưới tiếp theo.
           </p>
         </div>
 
-        <div
-          style={{
-            backgroundColor: "var(--color-card)",
-            borderRadius: "var(--radius-card)",
-            border: "1px solid var(--color-border-light)",
-            padding: "1rem",
-            marginBottom: "1rem",
-          }}
-        >
-          {/* Name */}
-          <div style={{ marginBottom: "0.875rem" }}>
-            <label
-              style={{
-                display: "block",
-                fontSize: "0.8rem",
-                fontWeight: 700,
-                color: "var(--color-text)",
-                marginBottom: "0.375rem",
-              }}
-            >
+        <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+          <div>
+            <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--color-terracotta)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
               Họ và tên
             </label>
             <input
               type="text"
-              placeholder="Nguyễn Văn A"
+              placeholder="VD: Hải Anh"
               value={form.name}
-              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
               style={inputStyle}
+              className="earthen-input"
             />
           </div>
 
-          {/* Phone */}
-          <div style={{ marginBottom: "0.875rem" }}>
-            <label
-              style={{
-                display: "block",
-                fontSize: "0.8rem",
-                fontWeight: 700,
-                color: "var(--color-text)",
-                marginBottom: "0.375rem",
-              }}
-            >
+          <div>
+            <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--color-terracotta)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
               Số điện thoại
             </label>
             <input
               type="tel"
-              placeholder="0901234567"
+              placeholder="09..."
               value={form.phone}
-              onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+              onChange={(e) => setForm({ ...form, phone: e.target.value })}
               style={inputStyle}
+              className="earthen-input"
             />
           </div>
 
-          {/* Address */}
           <div>
-            <label
-              style={{
-                display: "block",
-                fontSize: "0.8rem",
-                fontWeight: 700,
-                color: "var(--color-text)",
-                marginBottom: "0.375rem",
-              }}
-            >
-              Địa chỉ giao hàng
+            <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--color-terracotta)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              Địa chỉ chi tiết
             </label>
             <textarea
-              placeholder="Số nhà, tên đường, phường/xã, quận/huyện..."
+              placeholder="Số nhà, tên đường..."
               value={form.address}
-              onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
-              rows={3}
-              style={{ ...inputStyle, resize: "vertical", minHeight: "80px" }}
+              onChange={(e) => setForm({ ...form, address: e.target.value })}
+              rows={2}
+              style={{ ...inputStyle, resize: "none" }}
+              className="earthen-input"
             />
           </div>
         </div>
@@ -194,13 +150,13 @@ export default function ProfilePage() {
         <button
           onClick={handleSave}
           className="btn-primary"
-          style={
-            saved
-              ? { background: "var(--color-success)", backgroundColor: "var(--color-success)" }
-              : {}
-          }
+          style={{
+            marginTop: "2.5rem",
+            padding: "1.25rem",
+            background: saved ? "var(--color-success)" : "var(--color-abyssal)",
+          }}
         >
-          {saved ? "✓ Đã lưu thông tin!" : "💾 Lưu thông tin"}
+          {saved ? "✓ Đã ghi nhớ" : "Lưu vào sổ tay"}
         </button>
 
         <div className="pb-nav" />
@@ -209,9 +165,12 @@ export default function ProfilePage() {
       <BottomNav />
 
       <style>{`
-        input:focus, textarea:focus {
-          border-color: var(--color-primary) !important;
-          box-shadow: 0 0 0 3px rgba(124, 79, 42, 0.1);
+        .earthen-input:focus {
+          border-color: var(--color-abyssal) !important;
+        }
+        .earthen-input::placeholder {
+          color: rgba(26, 47, 76, 0.3);
+          font-weight: 300;
         }
       `}</style>
     </div>

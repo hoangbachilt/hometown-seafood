@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, Suspense } from "react";
+import { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
-
-  // Short order ID for display (first 8 chars)
   const shortId = orderId ? orderId.slice(0, 8).toUpperCase() : "—";
 
   return (
@@ -23,144 +21,65 @@ function SuccessContent() {
         padding: "2rem 1.5rem",
         textAlign: "center",
       }}
+      className="animate-tide-in"
     >
-      {/* Success icon */}
+      {/* Meditative Icon */}
       <div
-        className="animate-check-bounce"
         style={{
-          width: "96px",
-          height: "96px",
-          borderRadius: "50%",
-          backgroundColor: "#dcfce7",
+          width: "120px",
+          height: "120px",
+          borderRadius: "var(--radius-organic-2)",
+          backgroundColor: "var(--color-seafoam)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          marginBottom: "1.5rem",
+          marginBottom: "2.5rem",
+          boxShadow: "0 20px 40px rgba(216, 226, 220, 0.5)",
         }}
       >
-        <svg
-          width="48"
-          height="48"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#16a34a"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
+        <span style={{ fontSize: "3rem", opacity: 0.8 }}>🌊</span>
       </div>
 
-      {/* Title */}
       <h1
         style={{
           fontSize: "1.5rem",
           fontWeight: 800,
-          color: "var(--color-text)",
-          marginBottom: "0.5rem",
+          color: "var(--color-abyssal)",
+          marginBottom: "1rem",
+          letterSpacing: "-0.02em",
         }}
       >
-        Đặt hàng thành công! 🎉
+        Đơn hàng đang trôi về phía bạn
       </h1>
 
       <p
         style={{
-          color: "var(--color-text-muted)",
-          fontSize: "0.9rem",
-          marginBottom: "0.25rem",
+          color: "var(--color-abyssal-muted)",
+          fontSize: "1rem",
+          fontWeight: 300,
+          lineHeight: 1.6,
+          maxWidth: "300px",
+          marginBottom: "2.5rem",
         }}
       >
-        Mã đơn hàng:{" "}
-        <span style={{ fontWeight: 800, color: "var(--color-primary)", fontFamily: "monospace" }}>
+        Mã số hành trình: <br />
+        <span style={{ fontWeight: 700, color: "var(--color-terracotta)", letterSpacing: "0.1em" }}>
           #{shortId}
         </span>
       </p>
 
-      {/* Notice card */}
-      <div
-        className="animate-fade-in"
-        style={{
-          backgroundColor: "var(--color-card)",
-          border: "1px solid var(--color-border-light)",
-          borderRadius: "var(--radius-card)",
-          padding: "1.25rem",
-          marginTop: "1.5rem",
-          marginBottom: "1.5rem",
-          width: "100%",
-          maxWidth: "360px",
-          textAlign: "left",
-        }}
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.875rem" }}>
-          <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
-            <span style={{ fontSize: "1.25rem", flexShrink: 0 }}>📞</span>
-            <div>
-              <p style={{ fontWeight: 700, color: "var(--color-text)", fontSize: "0.875rem" }}>
-                Xác nhận đơn hàng
-              </p>
-              <p style={{ color: "var(--color-text-muted)", fontSize: "0.8rem" }}>
-                Shop sẽ liên hệ xác nhận đơn hàng trong thời gian sớm nhất
-              </p>
-            </div>
-          </div>
-
-          <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
-            <span style={{ fontSize: "1.25rem", flexShrink: 0 }}>🚚</span>
-            <div>
-              <p style={{ fontWeight: 700, color: "var(--color-text)", fontSize: "0.875rem" }}>
-                Giao hàng tận nơi
-              </p>
-              <p style={{ color: "var(--color-text-muted)", fontSize: "0.8rem" }}>
-                Hàng tươi sẽ được giao đến địa chỉ bạn đã cung cấp
-              </p>
-            </div>
-          </div>
-
-          <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
-            <span style={{ fontSize: "1.25rem", flexShrink: 0 }}>💵</span>
-            <div>
-              <p style={{ fontWeight: 700, color: "var(--color-text)", fontSize: "0.875rem" }}>
-                Thanh toán khi nhận
-              </p>
-              <p style={{ color: "var(--color-text-muted)", fontSize: "0.8rem" }}>
-                Chỉ cần trả tiền mặt khi nhận được hàng (COD)
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* CTA button */}
       <Link
         href="/"
+        className="btn-primary"
         style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "0.5rem",
-          padding: "0.875rem 2rem",
-          background: "linear-gradient(135deg, #a84e06 0%, #c9620a 100%)",
-          color: "white",
-          borderRadius: "var(--radius-btn)",
-          fontWeight: 700,
-          fontSize: "0.95rem",
-          textDecoration: "none",
-          boxShadow: "0 4px 14px rgba(201, 98, 10, 0.3)",
-          transition: "transform 0.2s ease, box-shadow 0.2s ease",
+          width: "auto",
+          padding: "1rem 2.5rem",
+          backgroundColor: "var(--color-abyssal)", // Use abyssal blue for calming effect
+          color: "var(--color-sand)",
         }}
       >
-        🌊 Tiếp tục mua sắm
+        Trở về bến
       </Link>
-
-      <p
-        style={{
-          marginTop: "1rem",
-          fontSize: "0.8rem",
-          color: "var(--color-text-light)",
-        }}
-      >
-        Cảm ơn bạn đã tin tưởng lựa chọn hải sản của chúng tôi! 🦑
-      </p>
     </div>
   );
 }
