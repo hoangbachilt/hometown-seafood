@@ -1,0 +1,25 @@
+name: Keep Supabase Alive
+
+# Kịch bản này sẽ được kích hoạt:
+# 1. Tự động chạy vào lúc 00:00 (UTC) mỗi 3 ngày một lần (schedule)
+# 2. Chạy thủ công bằng nút bấm trên giao diện GitHub (workflow_dispatch)
+on:
+  schedule:
+    - cron: '0 0 */3 * *'
+  workflow_dispatch:
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Gửi API request để giữ Supabase không bị tạm dừng
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        # Gọi API REST của Supabase, truy vấn 1 dòng từ bảng 'products'
+        run: |
+          curl -s -o /dev/null -w "%{http_code}" -X GET "${SUPABASE_URL}/rest/v1/products?select=*&limit=1" \
+          -H "apikey: ${SUPABASE_ANON_KEY}" \
+          -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+          -H "Content-Profile: public"

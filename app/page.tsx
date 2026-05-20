@@ -41,7 +41,7 @@ export default async function HomePage() {
               letterSpacing: "-0.03em",
             }}
           >
-            Hải Sản <br />
+            Hải Sản & <br />
             <span style={{ color: "var(--color-terracotta-light)" }}>Đặc Sản Quê</span>
           </h1>
           <p
@@ -53,7 +53,7 @@ export default async function HomePage() {
               animationDelay: "0.1s",
             }}
           >
-            Nghệ thuật ẩm thực từ biển cả
+            Hương vị nguyên bản từ biển cả & quê hương
           </p>
         </div>
 
